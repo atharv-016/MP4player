@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atharv's Player</title>
+    <link rel="icon" type="image/png/jpg" href="atharvaa.png">
+
+
+
+
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #0f3460;
+            --text-color: #ffffff;
+            --highlight-color: #00b4d8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .music-player {
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .player-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .settings-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .settings-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        .album-art {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            object-fit: cover;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .album-art:hover {
+            transform: scale(1.02);
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .song-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .song-artist {
+            font-size: 1rem;
+            color: rgba(230, 230, 230, 0.7);
+        }
+
+        .progress-container {
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(230, 230, 230, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--highlight-color);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: rgba(230, 230, 230, 0.7);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-btn {
+            background: var(--highlight-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(0, 180, 216, 0.3);
+        }
+
+        .playlist {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: backgroundd 0.2s;
+        }
+
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .playlist-item.active {
+            background: rgba(0, 180, 216, 0.2);
+        }
+
+        .playlist-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+
+        .playlist-info {
+            flex: 1;
+        }
+
+        .playlist-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .playlist-artist {
+            font-size: 0.8rem;
+            color: rgba(230, 230, 230, 0.7);
+        }
+
+        .download-btn {
+            background: none;
+            border: none;
+            color: var(--highlight-color);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .settings-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .settings-group {
+            margin-bottom: 25px;
+        }
+
+        .settings-group-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--highlight-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .setting-label {
+            font-size: 0.9rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--highlight-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--highlight-color);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="music-player">
+        <div class="player-header">
+            <h1 class="player-title">AK' Player</h1>
+            <button class="settings-btn" id="settings-btn">⚙️</button>
+        </div>
+
+        <img src="https://source.unsplash.com/random/400x400/?music,album" alt="Album Art" class="album-art">
+
+        <div class="song-info">
+            <h2 class="song-title">Song Title</h2>
+            <p class="song-artist">Artist Name</p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <div class="time-info">
+                <span id="current-time">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="prev-btn">⏮</button>
+            <button class="control-btn play-btn" id="play-btn">▶</button>
+            <button class="control-btn" id="next-btn">⏭</button>
+        </div>
+
+        <div class="playlist" id="playlist">
+            <!-- Playlist items will be added here dynamically -->
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-header">
+                <h2 class="settings-title">Settings</h2>
+                <button class="close-settings" id="close-settings">✕</button>
+            </div>
+            
+            <div class="settings-content">
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Audio</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Crossfade</span>
+                        <label class="switch">
+                            <input type="checkbox" id="crossfade-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Crossfade Duration</span>
+                        <select id="crossfade-duration">
+                            <option value="3">3 seconds</option>
+                            <option value="5" selected>5 seconds</option>
+                            <option value="10">10 seconds</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Volume Boost</span>
+                        <label class="switch">
+                            <input type="checkbox" id="volume-boost">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Playback</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Auto-play</span>
+                        <label class="switch">
+                            <input type="checkbox" id="autoplay-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Repeat</span>
+                        <select id="repeat-mode">
+                            <option value="off">Off</option>
+                            <option value="all">All</option>
+                            <option value="one">One</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Shuffle</span>
+                        <label class="switch">
+                            <input type="checkbox" id="shuffle-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Appearance</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Theme Color</span>
+                        <select id="theme-color">
+                            <option value="#00b4d8">Ocean Blue</option>
+                            <option value="#ff6b6b">Coral Red</option>
+                            <option value="#51cf66">Emerald Green</option>
+                            <option value="#fcc419">Sun Yellow</option>                         
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3 class="settings-group-title">Library</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Show Downloads</span>
+                        <label class="switch">
+                            <input type="checkbox" id="show-downloads" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Download Quality</span>
+                        <select id="download-quality">
+                            <option value="low">Low (480kbps)</option>
+                            <option value="high">High (320kbps)</option>
+                            <option value="medium" selected>Medium (192kbps)</option>
+                            <option value="low">Low (128kbps)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Music data
+        const songs = [
+        {         
+                title: "Where you are",
+                artist: "Halal Beats",
+                src: "SpotiDownloader.com - Where you are - Halal Beats.mp3",
+                cover: "Cover of Where you are by Halal Beats.jpg"
+            },
+            {
+                title: "Happy Nation",
+                artist: "Ace of Base",
+                src: "SpotiDownloader.com - Happy Nation - Ace of Base.mp3",
+                cover: "Cover of Happy Nation by Ace of Base.jpg"
+            },
+            {
+                title: "Mortals",
+                artist: "Warriyo",
+                src: "SpotiDownloader.com - Mortals - Warriyo.mp3",
+                cover: "Cover of Mortals by Warriyo.jpg"
+            },
+            {
+                title: "EEYUH! x Fluxxwave",
+                artist: "Clovis rays ",
+                src: "SpotiDownloader.com - EEYUH! x Fluxxwave (Slowed + Reverb) - Clovis Reyes.mp3",
+                cover: "Cover of EEYUH! x Fluxxwave (Slowed + Reverb) by Clovis Reyes, HR, Irokz.jpg"
+            },
+            {
+                title: "SkyFall",
+                artist: "Adele",
+                src: "SpotiDownloader.com - Skyfall - Adele.mp3",
+                cover: "Cover of EEYUH! x Fluxxwave (Slowed + Reverb) by Clovis Reyes, HR, Irokz.jpg"
+            }
+
+        ];
+
+        // Player elements
+        const audio = new Audio();
+        const playBtn = document.getElementById('play-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const albumArt = document.querySelector('.album-art');
+        const songTitle = document.querySelector('.song-title');
+        const songArtist = document.querySelector('.song-artist');
+        const playlist = document.getElementById('playlist');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        const closeSettings = document.getElementById('close-settings');
+
+        // Current song index
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let isShuffleOn = false;
+        let isRepeatOn = false;
+
+        // Initialize player
+        function initPlayer() {
+            loadSong(currentSongIndex);
+            renderPlaylist();
+            
+            // Load settings from localStorage if available
+            loadSettings();
+        }
+
+        // Load song
+        function loadSong(index) {
+            const song = songs[index];
+            audio.src = song.src;
+            albumArt.src = song.cover;
+            songTitle.textContent = song.title;
+            songArtist.textContent = song.artist;
+            
+            // Highlight current song in playlist
+            const playlistItems = document.querySelectorAll('.playlist-item');
+            playlistItems.forEach(item => item.classList.remove('active'));
+            playlistItems[index].classList.add('active');
+        }
+
+        // Play song
+        function playSong() {
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+            audio.play();
+        }
+
+        // Pause song
+        function pauseSong() {
+            isPlaying = false;
+            playBtn.textContent = '▶';
+            audio.pause();
+        }
+
+        // Previous song
+        function prevSong() {
+            currentSongIndex--;
+            if (currentSongIndex < 0) {
+                currentSongIndex = songs.length - 1;
+            }
+            loadSong(currentSongIndex);
+            if (isPlaying) {
+                playSong();
+            }
+        }
+
+        // Next song
+        function nextSong() {
+            if (isShuffleOn) {
+                currentSongIndex = Math.floor(Math.random() * songs.length);
+            } else {
+                currentSongIndex++;
+                if (currentSongIndex > songs.length - 1) {
+                    currentSongIndex = 0;
+                }
+            }
+            loadSong(currentSongIndex);
+            if (isPlaying) {
+                playSong();
+            }
+        }
+
+        // Update progress bar
+        function updateProgress(e) {
+            const { duration, currentTime } = e.srcElement;
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            
+            // Update time display
+            const durationMinutes = Math.floor(duration / 60);
+            let durationSeconds = Math.floor(duration % 60);
+            if (durationSeconds < 10) {
+                durationSeconds = `0${durationSeconds}`;
+            }
+            
+            // Avoid NaN display
+            if (durationSeconds) {
+                durationEl.textContent = `${durationMinutes}:${durationSeconds}`;
+            }
+            
+            const currentMinutes = Math.floor(currentTime / 60);
+            let currentSeconds = Math.floor(currentTime % 60);
+            if (currentSeconds < 10) {
+                currentSeconds = `0${currentSeconds}`;
+            }
+            currentTimeEl.textContent = `${currentMinutes}:${currentSeconds}`;
+        }
+
+        // Set progress bar
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        // Render playlist
+        function renderPlaylist() {
+            playlist.innerHTML = '';
+            songs.forEach((song, index) => {
+                const playlistItem = document.createElement('div');
+                playlistItem.classList.add('playlist-item');
+                if (index === currentSongIndex) {
+                    playlistItem.classList.add('active');
+                }
+                playlistItem.innerHTML = `
+                    <img src="${song.cover}" alt="${song.title}">
+                    <div class="playlist-info">
+                        <p class="playlist-title">${song.title}</p>
+                        <p class="playlist-artist">${song.artist}</p>
+                    </div>
+                    <button class="download-btn">↓</button>
+                `;
+                playlistItem.addEventListener('click', () => {
+                    currentSongIndex = index;
+                    loadSong(currentSongIndex);
+                    playSong();
+                });
+                playlist.appendChild(playlistItem);
+            });
+        }
+
+        // Toggle settings panel
+        function toggleSettings() {
+            settingsPanel.style.display = settingsPanel.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const themeColor = localStorage.getItem('themeColor') || '#00b4d8';
+            const shuffle = localStorage.getItem('shuffle') === 'true';
+            const repeat = localStorage.getItem('repeat') || 'off';
+            
+            // Apply settings
+            document.documentElement.style.setProperty('--highlight-color', themeColor);
+            document.getElementById('theme-color').value = themeColor;
+            document.getElementById('shuffle-toggle').checked = shuffle;
+            document.getElementById('repeat-mode').value = repeat;
+            isShuffleOn = shuffle;
+            
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-toggle').checked = true;
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('darkMode', document.getElementById('dark-mode-toggle').checked);
+            localStorage.setItem('themeColor', document.getElementById('theme-color').value);
+            localStorage.setItem('shuffle', document.getElementById('shuffle-toggle').checked);
+            localStorage.setItem('repeat', document.getElementById('repeat-mode').value);
+            
+            // Apply theme color immediately
+            document.documentElement.style.setProperty('--highlight-color', 
+                document.getElementById('theme-color').value);
+            
+            // Update shuffle state
+            isShuffleOn = document.getElementById('shuffle-toggle').checked;
+        }
+
+        // Event listeners
+        playBtn.addEventListener('click', () => {
+            isPlaying ? pauseSong() : playSong();
+        });
+
+        prevBtn.addEventListener('click', prevSong);
+        nextBtn.addEventListener('click', nextSong);
+        settingsBtn.addEventListener('click', toggleSettings);
+        closeSettings.addEventListener('click', toggleSettings);
+
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', () => {
+            const repeatMode = document.getElementById('repeat-mode').value;
+            if (repeatMode === 'one') {
+                audio.currentTime = 0;
+                audio.play();
+            } else {
+                nextSong();
+            }
+        });
+        progressBar.addEventListener('click', setProgress);
+
+        // Settings event listeners
+        document.getElementById('dark-mode-toggle').addEventListener('change', saveSettings);
+        document.getElementById('theme-color').addEventListener('change', saveSettings);
+        document.getElementById('shuffle-toggle').addEventListener('change', saveSettings);
+        document.getElementById('repeat-mode').addEventListener('change', saveSettings);
+
+        // Initialize player
+          initPlayer();
+
+
+   
+    </script>
+</body>
+</html>
